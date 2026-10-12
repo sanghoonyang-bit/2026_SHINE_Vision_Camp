@@ -3,103 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스프레드시트 DB 연동 웹사이트</title>
+  <title>참가자 명단 및 참가 여부 관리</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 30px;
-      max-width: 900px;
-      margin: 0 auto;
-      background-color: #f9f9f9;
-    }
-    h1 {
-      color: #333;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: #fff;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    th, td {
-      border: 1px solid #e0e0e0;
-      padding: 12px 15px;
-      text-align: left;
-    }
-    th {
-      background-color: #4CAF50;
-      color: white;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
+    body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; max-width: 950px; margin: 0 auto; background-color: #f4f6f8; }
+    .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+    .hidden { display: none; }
+    input, button, select { padding: 10px; margin-top: 8px; font-size: 15px; border-radius: 5px; border: 1px solid #cccccc; }
+    button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+    button:hover { background-color: #218838; }
+    .logout-btn { background-color: #6c757d; }
+    .logout-btn:hover { background-color: #5a6268; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+    th, td { border: 1px solid #dee2e6; padding: 10px 6px; text-align: center; }
+    th { background-color: #e9ecef; color: #495057; }
+    select { font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <h1>📊 스프레드시트 데이터 목록</h1>
-  
-  <table id="data-table">
-    <thead id="table-head"></thead>
-    <tbody id="table-body">
-      <tr>
-        <td>데이터를 불러오는 중입니다...</td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- 1. 로그인 섹션 -->
+  <div id="login-section" class="card">
+    <h2>⛪ 교회 참가자 관리 시스템 로그인</h2>
+    <p style="color: #6c757d; font-size: 14px;">아이디: 이름 / 비밀번호: 연락처 뒤 4자리</p>
+    <div>
+      <input type="text" id="user-name" placeholder="이름 (예: 홍길동)" style="width: 100%; box-sizing: border-box;"><br>
+      <input type="password" id="user-pw" maxlength="4" placeholder="연락처 뒤 4자리 (예: 5678)" style="width: 100%; box-sizing: border-box;"><br><br>
+      <button onclick="handleLogin()" style="width: 100%;">로그인</button>
+    </div>
+    <p id="login-msg" style="margin-top: 15px; font-weight: bold;"></p>
+  </div>
+
+  <!-- 2. 대시보드 영역 -->
+  <div id="dashboard-section" class="card hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2><span id="church-title" style="color: #28a745;"></span> 참가자 리스트</h2>
+      <button onclick="location.reload()" class="logout-btn">로그아웃</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>지역</th>
+          <th>학교명</th>
+          <th>구분</th>
+          <th>학년</th>
+          <th>성별</th>
+          <th>이름</th>
+          <th>연락처(뒤4자리)</th>
+          <th>참가 여부</th>
+        </tr>
+      </thead>
+      <tbody id="participant-list"></tbody>
+    </table>
+  </div>
 
   <script>
-    // ⚠️ 1단계에서 복사한 본인의 Google Apps Script 웹 앱 URL을 아래에 넣으세요.
-    const API_URL = "https://script.google.com/macros/s/AKfycbwLdnsjuSGZRBlbvqfKOqxJZtRpLP1aNsbqDldKBHzkrh3MHMD7dMrxIx-gkqyjbu1H/exec";
+    // ⚠️ 본인의 Apps Script 웹 앱 URL로 변경하세요.
+    const API_URL = "YOUR_DEPLOYED_WEB_APP_URL";
 
-    // 구글 스프레드시트 API 호출 함수
-    async function fetchData() {
-      try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
+    // 로그인 기능
+    async function handleLogin() {
+      const name = document.getElementById("user-name").value;
+      const pw = document.getElementById("user-pw").value;
+      const msgElem = document.getElementById("login-msg");
 
-        renderTable(data);
-      } catch (error) {
-        console.error("데이터 로드 실패:", error);
-        document.getElementById("table-body").innerHTML = 
-          `<tr><td style="color: red;">데이터를 불러오는 데 실패했습니다. URL을 확인해 주세요.</td></tr>`;
-      }
-    }
-
-    // JSON 데이터를 HTML 테이블로 변환하는 함수
-    function renderTable(data) {
-      const tableHead = document.getElementById("table-head");
-      const tableBody = document.getElementById("table-body");
-
-      if (!data || data.length === 0) {
-        tableBody.innerHTML = "<tr><td>데이터가 없습니다.</td></tr>";
+      if (!name || !pw) {
+        msgElem.style.color = "red";
+        msgElem.innerText = "이름과 연락처 뒤 4자리를 모두 입력해주세요.";
         return;
       }
 
-      // 1. 헤더(컬럼명) 생성
-      const headers = Object.keys(data[0]);
-      let headHTML = "<tr>";
-      headers.forEach(header => {
-        headHTML += `<th>${header}</th>`;
-      });
-      headHTML += "</tr>";
-      tableHead.innerHTML = headHTML;
+      msgElem.style.color = "blue";
+      msgElem.innerText = "로그인 인증 중...";
 
-      // 2. 행(데이터) 생성
-      let bodyHTML = "";
-      data.forEach(row => {
-        bodyHTML += "<tr>";
-        headers.forEach(header => {
-          bodyHTML += `<td>${row[header] !== undefined ? row[header] : ""}</td>`;
-        });
-        bodyHTML += "</tr>";
-      });
-      tableBody.innerHTML = bodyHTML;
+      try {
+        const res = await fetch(`${API_URL}?action=login&id=${encodeURIComponent(name)}&pw=${encodeURIComponent(pw)}`);
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById("login-section").classList.add("hidden");
+          document.getElementById("dashboard-section").classList.remove("hidden");
+          document.getElementById("church-title").innerText = data.church;
+          
+          renderTable(data.list);
+        } else {
+          msgElem.style.color = "red";
+          msgElem.innerText = data.message;
+        }
+      } catch (err) {
+        console.error(err);
+        msgElem.style.color = "red";
+        msgElem.innerText = "접속 에러가 발생했습니다. URL을 확인해 주세요.";
+      }
     }
 
-    // 페이지 로드 시 실행
-    fetchData();
+    // 테이블 렌더링
+    function renderTable(list) {
+      const tbody = document.getElementById("participant-list");
+      tbody.innerHTML = "";
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8">등록된 참가자가 없습니다.</td></tr>`;
+        return;
+      }
+
+      list.forEach(item => {
+        const tr = document.createElement("tr");
+        const currentVal = String(item.attending).trim();
+
+        tr.innerHTML = `
+          <td>${item.region}</td>
+          <td>${item.schoolName}</td>
+          <td>${item.schoolType}</td>
+          <td>${item.grade}</td>
+          <td>${item.gender}</td>
+          <td><b>${item.name}</b></td>
+          <td>${item.phoneLast4}</td>
+          <td>
+            <select onchange="updateAttendance(${item.rowId}, this.value)" style="color: ${currentVal === '불참' ? '#dc3545' : '#28a745'};">
+              <option value="참석" ${currentVal !== '불참' ? 'selected' : ''}>참석</option>
+              <option value="불참" ${currentVal === '불참' ? 'selected' : ''}>불참</option>
+            </select>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 참가 여부 수정을 구글 시트 I열에 실시간 반영
+    async function updateAttendance(rowId, newStatus) {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ rowId: rowId, attending: newStatus })
+        });
+        alert(`참가 여부가 '${newStatus}'(으)로 저장되었습니다.`);
+      } catch (err) {
+        alert("저장에 실패했습니다. 다시 시도해 주세요.");
+      }
+    }
   </script>
 
 </body>
