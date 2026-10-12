@@ -3,41 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>참가자 명단 및 참가 여부 관리</title>
+  <title>교회 학생 참가자 관리 시스템</title>
   <style>
-    body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; max-width: 950px; margin: 0 auto; background-color: #f4f6f8; }
-    .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-    .hidden { display: none; }
-    input, button, select { padding: 10px; margin-top: 8px; font-size: 15px; border-radius: 5px; border: 1px solid #cccccc; }
-    button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
-    button:hover { background-color: #218838; }
-    .logout-btn { background-color: #6c757d; }
-    .logout-btn:hover { background-color: #5a6268; }
-    table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
-    th, td { border: 1px solid #dee2e6; padding: 10px 6px; text-align: center; }
-    th { background-color: #e9ecef; color: #495057; }
-    select { font-weight: bold; }
+    * {
+      box-sizing: border-box;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    body {
+      padding: 20px;
+      max-width: 950px;
+      margin: 0 auto;
+      background-color: #f4f6f8;
+      color: #333;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    h2 {
+      margin-top: 0;
+      color: #222;
+    }
+    .sub-text {
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      font-size: 15px;
+      border-radius: 6px;
+      border: 1px solid #cccccc;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 15px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    .btn-login {
+      background-color: #28a745;
+      color: white;
+      width: 100%;
+    }
+    .btn-login:hover {
+      background-color: #218838;
+    }
+    .btn-logout {
+      background-color: #6c757d;
+      color: white;
+    }
+    .btn-logout:hover {
+      background-color: #5a6268;
+    }
+    .header-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #e9ecef;
+      color: #495057;
+    }
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    select {
+      padding: 6px 10px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ced4da;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #login-msg {
+      margin-top: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
-  <!-- 1. 로그인 섹션 -->
+  <!-- 1. 교역자 로그인 화면 -->
   <div id="login-section" class="card">
-    <h2>⛪ 교회 참가자 관리 시스템 로그인</h2>
-    <p style="color: #6c757d; font-size: 14px;">아이디: 이름 / 비밀번호: 연락처 뒤 4자리</p>
+    <h2>⛪ 교회 학생 참가자 관리 시스템</h2>
+    <p class="sub-text">아이디: 교역자 이름 / 비밀번호: 연락처 뒤 4자리</p>
+    
     <div>
-      <input type="text" id="user-name" placeholder="이름 (예: 홍길동)" style="width: 100%; box-sizing: border-box;"><br>
-      <input type="password" id="user-pw" maxlength="4" placeholder="연락처 뒤 4자리 (예: 5678)" style="width: 100%; box-sizing: border-box;"><br><br>
-      <button onclick="handleLogin()" style="width: 100%;">로그인</button>
+      <label for="user-name"><b>교역자 이름 (아이디)</b></label>
+      <input type="text" id="user-name" placeholder="예: 전인혁, 이지선, 양상훈">
+
+      <label for="user-pw"><b>연락처 뒤 4자리 (비밀번호)</b></label>
+      <input type="password" id="user-pw" maxlength="4" placeholder="예: 7291">
+
+      <button onclick="handleLogin()" class="btn-login">로그인</button>
     </div>
-    <p id="login-msg" style="margin-top: 15px; font-weight: bold;"></p>
+    
+    <p id="login-msg"></p>
   </div>
 
-  <!-- 2. 대시보드 영역 -->
+  <!-- 2. 학생 명단 및 참가여부 수정 화면 -->
   <div id="dashboard-section" class="card hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h2><span id="church-title" style="color: #28a745;"></span> 참가자 리스트</h2>
-      <button onclick="location.reload()" class="logout-btn">로그아웃</button>
+    <div class="header-area">
+      <h2><span id="church-title" style="color: #28a745;"></span> 학생 참가자 명단</h2>
+      <button onclick="location.reload()" class="btn-logout">로그아웃</button>
     </div>
 
     <table>
@@ -58,13 +152,13 @@
   </div>
 
   <script>
-    // ⚠️ 본인의 Apps Script 웹 앱 URL로 변경하세요.
+    // ⚠️ [중요] 아래 큰따옴표 안에 본인의 Apps Script 웹 앱 URL을 붙여넣으세요!
     const API_URL = "YOUR_DEPLOYED_WEB_APP_URL";
 
-    // 로그인 기능
+    // 1. 로그인 함수
     async function handleLogin() {
-      const name = document.getElementById("user-name").value;
-      const pw = document.getElementById("user-pw").value;
+      const name = document.getElementById("user-name").value.trim();
+      const pw = document.getElementById("user-pw").value.trim();
       const msgElem = document.getElementById("login-msg");
 
       if (!name || !pw) {
@@ -74,7 +168,7 @@
       }
 
       msgElem.style.color = "blue";
-      msgElem.innerText = "로그인 인증 중...";
+      msgElem.innerText = "로그인 확인 중...";
 
       try {
         const res = await fetch(`${API_URL}?action=login&id=${encodeURIComponent(name)}&pw=${encodeURIComponent(pw)}`);
@@ -93,17 +187,17 @@
       } catch (err) {
         console.error(err);
         msgElem.style.color = "red";
-        msgElem.innerText = "접속 에러가 발생했습니다. URL을 확인해 주세요.";
+        msgElem.innerText = "접속 중 에러가 발생했습니다. API_URL을 확인해 주세요.";
       }
     }
 
-    // 테이블 렌더링
+    // 2. 학생 리스트 테이블 표출 함수
     function renderTable(list) {
       const tbody = document.getElementById("participant-list");
       tbody.innerHTML = "";
 
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8">등록된 참가자가 없습니다.</td></tr>`;
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8">등록된 학생 참가자가 없습니다.</td></tr>`;
         return;
       }
 
@@ -112,13 +206,13 @@
         const currentVal = String(item.attending).trim();
 
         tr.innerHTML = `
-          <td>${item.region}</td>
-          <td>${item.schoolName}</td>
-          <td>${item.schoolType}</td>
-          <td>${item.grade}</td>
-          <td>${item.gender}</td>
-          <td><b>${item.name}</b></td>
-          <td>${item.phoneLast4}</td>
+          <td>${item.region || ''}</td>
+          <td>${item.schoolName || ''}</td>
+          <td>${item.schoolType || ''}</td>
+          <td>${item.grade || ''}</td>
+          <td>${item.gender || ''}</td>
+          <td><b>${item.name || ''}</b></td>
+          <td>${item.phoneLast4 || '없음'}</td>
           <td>
             <select onchange="updateAttendance(${item.rowId}, this.value)" style="color: ${currentVal === '불참' ? '#dc3545' : '#28a745'};">
               <option value="참석" ${currentVal !== '불참' ? 'selected' : ''}>참석</option>
@@ -130,14 +224,14 @@
       });
     }
 
-    // 참가 여부 수정을 구글 시트 I열에 실시간 반영
+    // 3. 참가 여부 선택 변경 시 구글 시트에 실시간 반영 함수
     async function updateAttendance(rowId, newStatus) {
       try {
         await fetch(API_URL, {
           method: "POST",
           body: JSON.stringify({ rowId: rowId, attending: newStatus })
         });
-        alert(`참가 여부가 '${newStatus}'(으)로 저장되었습니다.`);
+        alert(`참가 여부가 '${newStatus}'(으)로 변경되었습니다.`);
       } catch (err) {
         alert("저장에 실패했습니다. 다시 시도해 주세요.");
       }
