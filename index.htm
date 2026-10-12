@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스프레드시트 DB 연동 웹사이트</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 12px 15px;
+      text-align: left;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📊 스프레드시트 데이터 목록</h1>
+  
+  <table id="data-table">
+    <thead id="table-head"></thead>
+    <tbody id="table-body">
+      <tr>
+        <td>데이터를 불러오는 중입니다...</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    // ⚠️ 1단계에서 복사한 본인의 Google Apps Script 웹 앱 URL을 아래에 넣으세요.
+    const API_URL = "https://script.google.com/macros/s/AKfycbwLdnsjuSGZRBlbvqfKOqxJZtRpLP1aNsbqDldKBHzkrh3MHMD7dMrxIx-gkqyjbu1H/exec";
+
+    // 구글 스프레드시트 API 호출 함수
+    async function fetchData() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        renderTable(data);
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+        document.getElementById("table-body").innerHTML = 
+          `<tr><td style="color: red;">데이터를 불러오는 데 실패했습니다. URL을 확인해 주세요.</td></tr>`;
+      }
+    }
+
+    // JSON 데이터를 HTML 테이블로 변환하는 함수
+    function renderTable(data) {
+      const tableHead = document.getElementById("table-head");
+      const tableBody = document.getElementById("table-body");
+
+      if (!data || data.length === 0) {
+        tableBody.innerHTML = "<tr><td>데이터가 없습니다.</td></tr>";
+        return;
+      }
+
+      // 1. 헤더(컬럼명) 생성
+      const headers = Object.keys(data[0]);
+      let headHTML = "<tr>";
+      headers.forEach(header => {
+        headHTML += `<th>${header}</th>`;
+      });
+      headHTML += "</tr>";
+      tableHead.innerHTML = headHTML;
+
+      // 2. 행(데이터) 생성
+      let bodyHTML = "";
+      data.forEach(row => {
+        bodyHTML += "<tr>";
+        headers.forEach(header => {
+          bodyHTML += `<td>${row[header] !== undefined ? row[header] : ""}</td>`;
+        });
+        bodyHTML += "</tr>";
+      });
+      tableBody.innerHTML = bodyHTML;
+    }
+
+    // 페이지 로드 시 실행
+    fetchData();
+  </script>
+
+</body>
+</html>
