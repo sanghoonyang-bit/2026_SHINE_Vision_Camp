@@ -175,8 +175,8 @@
         <div class="form-group">
           <label>학교 구분</label>
           <select id="add-school-type">
-            <option value="중" selected>중학교</option>
-            <option value="고">고등학교</option>            
+            <option value="중" selected>중</option>
+            <option value="고">고</option>            
           </select>
         </div>
         <div class="form-group">
@@ -228,7 +228,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxrIxwJL54EZp7YtNiGkAaFJUgNsGTe_3RZ7UpeVZZMFQkO0cFcLWqSYpFtYDQd7TFJ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwgsFxgG4D_XacVRgfjuN5gbt-9pZYbMKOzPo9fDSO4Ni5BuGODstsmcQW6Ag8TMhNe/exec";
 
     let currentChurch = "";
     let currentRegion = "";
@@ -255,7 +255,7 @@
 
         if (data.success) {
           currentChurch = data.church;
-          currentRegion = data.region; // 백엔드에서 지역 정보를 받아옴
+          currentRegion = data.region;
           studentListData = data.list;
 
           document.getElementById("login-section").classList.add("hidden");
@@ -284,7 +284,7 @@
 
       const newStudentData = {
         action: "addStudent",
-        region: currentRegion, // 구글 시트에는 지역이 함께 기록됨
+        region: currentRegion,
         church: currentChurch,
         schoolName: document.getElementById("add-school-name").value.trim(),
         schoolType: document.getElementById("add-school-type").value,
@@ -321,7 +321,7 @@
       }
     }
 
-    // 3. 학생 리스트 테이블 표출 함수 (화면 표에서 지역 열 제외)
+    // 3. 학생 리스트 테이블 표출 함수
     function renderTable(list) {
       const tbody = document.getElementById("participant-list");
       tbody.innerHTML = "";
@@ -357,19 +357,21 @@
       });
     }
 
-    // 4. 행 수정 모드 전환 함수
+    // 4. 행 수정 모드 전환 함수 (구분 옵션을 "중"과 "고"로 단축 및 한정)
     function enableEditRow(rowId) {
       const tr = document.getElementById(`row-${rowId}`);
       const item = studentListData.find(s => s.rowId === rowId);
 
       if (!item) return;
 
+      const rawType = String(item.schoolType || '').trim();
+      const isHigh = rawType.includes('고');
+
       tr.querySelector('.cell-schoolName').innerHTML = `<input type="text" id="edit-schoolName-${rowId}" value="${item.schoolName || ''}" class="tbl-input">`;
       tr.querySelector('.cell-schoolType').innerHTML = `
         <select id="edit-schoolType-${rowId}" class="tbl-input">
-          <option value="중" ${item.schoolType === '중' ? 'selected' : ''}>중</option>
-          <option value="고" ${item.schoolType === '고' ? 'selected' : ''}>고</option>
-          <option value="기타" ${item.schoolType !== '중' && item.schoolType !== '고' ? 'selected' : ''}>기타</option>
+          <option value="중" ${!isHigh ? 'selected' : ''}>중</option>
+          <option value="고" ${isHigh ? 'selected' : ''}>고</option>
         </select>
       `;
       tr.querySelector('.cell-grade').innerHTML = `<input type="text" id="edit-grade-${rowId}" value="${item.grade || ''}" class="tbl-input" style="width: 50px;">`;
