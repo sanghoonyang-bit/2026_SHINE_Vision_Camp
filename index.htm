@@ -330,7 +330,7 @@
           <td>${item.grade || ''}</td>
           <td>${item.gender || ''}</td>
           <td><b>${item.name || ''}</b></td>
-          <td>${item.phone || item.phoneLast4 || '없음'}</td>
+          <td>${item.phone || item.phoneLast4 || '없음'}</td> 
           <td>
             <select onchange="updateAttendance(${item.rowId}, this.value)" style="color: ${currentVal === '불참' ? '#dc3545' : '#28a745'};">
               <option value="참석" ${currentVal !== '불참' ? 'selected' : ''}>참석</option>
