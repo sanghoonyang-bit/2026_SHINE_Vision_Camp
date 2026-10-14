@@ -11,7 +11,7 @@
     }
     body {
       padding: 20px;
-      max-width: 1000px;
+      max-width: 1050px;
       margin: 0 auto;
       background-color: #f4f6f8;
       color: #333;
@@ -36,8 +36,8 @@
       margin-bottom: 20px;
     }
     input[type="text"], input[type="password"], select {
-      padding: 10px 12px;
-      font-size: 14px;
+      padding: 8px 10px;
+      font-size: 13px;
       border-radius: 6px;
       border: 1px solid #cccccc;
     }
@@ -45,10 +45,12 @@
       width: 100%;
       margin-top: 8px;
       margin-bottom: 15px;
+      padding: 10px 12px;
+      font-size: 14px;
     }
     button {
-      padding: 10px 18px;
-      font-size: 14px;
+      padding: 8px 14px;
+      font-size: 13px;
       border-radius: 6px;
       border: none;
       cursor: pointer;
@@ -63,8 +65,14 @@
       font-size: 15px;
     }
     .btn-login:hover { background-color: #218838; }
-    .btn-add { background-color: #007bff; color: white; }
+    .btn-add { background-color: #007bff; color: white; padding: 10px 18px; font-size: 14px; }
     .btn-add:hover { background-color: #0056b3; }
+    .btn-edit { background-color: #ffc107; color: #212529; }
+    .btn-edit:hover { background-color: #e0a800; }
+    .btn-save { background-color: #28a745; color: white; }
+    .btn-save:hover { background-color: #218838; }
+    .btn-cancel { background-color: #6c757d; color: white; }
+    .btn-cancel:hover { background-color: #5a6268; }
     .btn-logout { background-color: #6c757d; color: white; }
     .btn-logout:hover { background-color: #5a6268; }
     
@@ -75,7 +83,6 @@
       margin-bottom: 15px;
     }
     
-    /* 학생 추가 폼 스타일 */
     .add-student-card {
       background-color: #f8f9fa;
       border: 1px solid #e9ecef;
@@ -85,7 +92,7 @@
     }
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -104,11 +111,11 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      font-size: 14px;
+      font-size: 13px;
     }
     th, td {
       border: 1px solid #dee2e6;
-      padding: 10px 8px;
+      padding: 8px 6px;
       text-align: center;
     }
     th {
@@ -117,6 +124,11 @@
     }
     tr:nth-child(even) {
       background-color: #f8f9fa;
+    }
+    .tbl-input {
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
     }
     #login-msg {
       margin-top: 15px;
@@ -145,7 +157,7 @@
     <p id="login-msg"></p>
   </div>
 
-  <!-- 2. 학생 명단 및 추가 대시보드 화면 -->
+  <!-- 2. 학생 명단 및 추가/수정 대시보드 화면 -->
   <div id="dashboard-section" class="card hidden">
     <div class="header-area">
       <h2><span id="church-title" style="color: #28a745;"></span> 샤인 비전캠프 참가자 명단</h2>
@@ -169,7 +181,7 @@
         </div>
         <div class="form-group">
           <label>학년</label>
-          <input type="text" id="add-grade" placeholder="예: 1, 2, 예비중, 예비고 는 1로 적어주세요">
+          <input type="text" id="add-grade" placeholder="예: 1, 2">
         </div>
         <div class="form-group">
           <label>성별</label>
@@ -209,6 +221,7 @@
           <th>이름</th>
           <th>연락처</th>
           <th>참가 여부</th>
+          <th>관리</th>
         </tr>
       </thead>
       <tbody id="participant-list"></tbody>
@@ -216,11 +229,11 @@
   </div>
 
   <script>
-    // ⚠️ [중요] 아래 큰따옴표 안에 본인의 Apps Script 웹 앱 URL을 붙여넣으세요!
-    const API_URL = "https://script.google.com/macros/s/AKfycbwgsFxgG4D_XacVRgfjuN5gbt-9pZYbMKOzPo9fDSO4Ni5BuGODstsmcQW6Ag8TMhNe/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxrIxwJL54EZp7YtNiGkAaFJUgNsGTe_3RZ7UpeVZZMFQkO0cFcLWqSYpFtYDQd7TFJ/exec";
 
     let currentChurch = "";
     let currentRegion = "";
+    let studentListData = []; // 학생 데이터를 저장할 배열
 
     // 1. 로그인 처리 함수
     async function handleLogin() {
@@ -244,12 +257,13 @@
         if (data.success) {
           currentChurch = data.church;
           currentRegion = data.region;
+          studentListData = data.list;
 
           document.getElementById("login-section").classList.add("hidden");
           document.getElementById("dashboard-section").classList.remove("hidden");
           document.getElementById("church-title").innerText = data.church;
           
-          renderTable(data.list);
+          renderTable(studentListData);
         } else {
           msgElem.style.color = "red";
           msgElem.innerText = data.message;
@@ -292,14 +306,13 @@
         if (result.success) {
           alert(`'${name}' 학생이 성공적으로 추가되었습니다.`);
           
-          // 폼 입력 초기화
           document.getElementById("add-school-name").value = "";
           document.getElementById("add-grade").value = "";
           document.getElementById("add-name").value = "";
           document.getElementById("add-phone").value = "";
 
-          // 테이블 최신화
-          renderTable(result.list);
+          studentListData = result.list;
+          renderTable(studentListData);
         } else {
           alert("학생 등록에 실패했습니다.");
         }
@@ -315,40 +328,129 @@
       tbody.innerHTML = "";
 
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8">등록된 참가자가 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9">등록된 참가자가 없습니다.</td></tr>`;
         return;
       }
 
-      list.forEach(item => {
+      list.forEach((item, index) => {
         const tr = document.createElement("tr");
+        tr.id = `row-${item.rowId}`;
         const currentVal = String(item.attending).trim();
 
         tr.innerHTML = `
           <td>${item.region || ''}</td>
-          <td>${item.schoolName || ''}</td>
-          <td>${item.schoolType || ''}</td>
-          <td>${item.grade || ''}</td>
-          <td>${item.gender || ''}</td>
-          <td><b>${item.name || ''}</b></td>
-          <td>${item.phone || item.phoneLast4 || '없음'}</td> 
+          <td class="cell-schoolName">${item.schoolName || ''}</td>
+          <td class="cell-schoolType">${item.schoolType || ''}</td>
+          <td class="cell-grade">${item.grade || ''}</td>
+          <td class="cell-gender">${item.gender || ''}</td>
+          <td class="cell-name"><b>${item.name || ''}</b></td>
+          <td class="cell-phone">${item.phone || '없음'}</td>
           <td>
             <select onchange="updateAttendance(${item.rowId}, this.value)" style="color: ${currentVal === '불참' ? '#dc3545' : '#28a745'};">
               <option value="참석" ${currentVal !== '불참' ? 'selected' : ''}>참석</option>
               <option value="불참" ${currentVal === '불참' ? 'selected' : ''}>불참</option>
             </select>
           </td>
+          <td>
+            <button onclick="enableEditRow(${item.rowId})" class="btn-edit">수정</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // 4. 기존 학생 참가 여부 실시간 변경 함수
+    // 4. 행 수정 모드 전환 함수
+    function enableEditRow(rowId) {
+      const tr = document.getElementById(`row-${rowId}`);
+      const item = studentListData.find(s => s.rowId === rowId);
+
+      if (!item) return;
+
+      tr.querySelector('.cell-schoolName').innerHTML = `<input type="text" id="edit-schoolName-${rowId}" value="${item.schoolName || ''}" class="tbl-input">`;
+      tr.querySelector('.cell-schoolType').innerHTML = `
+        <select id="edit-schoolType-${rowId}" class="tbl-input">
+          <option value="중" ${item.schoolType === '중' ? 'selected' : ''}>중</option>
+          <option value="고" ${item.schoolType === '고' ? 'selected' : ''}>고</option>
+          <option value="기타" ${item.schoolType !== '중' && item.schoolType !== '고' ? 'selected' : ''}>기타</option>
+        </select>
+      `;
+      tr.querySelector('.cell-grade').innerHTML = `<input type="text" id="edit-grade-${rowId}" value="${item.grade || ''}" class="tbl-input" style="width: 50px;">`;
+      tr.querySelector('.cell-gender').innerHTML = `
+        <select id="edit-gender-${rowId}" class="tbl-input">
+          <option value="남" ${item.gender === '남' ? 'selected' : ''}>남</option>
+          <option value="여" ${item.gender === '여' ? 'selected' : ''}>여</option>
+        </select>
+      `;
+      tr.querySelector('.cell-name').innerHTML = `<input type="text" id="edit-name-${rowId}" value="${item.name || ''}" class="tbl-input" style="width: 80px;">`;
+      tr.querySelector('.cell-phone').innerHTML = `<input type="text" id="edit-phone-${rowId}" value="${item.phone || ''}" class="tbl-input">`;
+
+      // 관리 버튼을 저장/취소로 변경
+      const lastTd = tr.children[8];
+      lastTd.innerHTML = `
+        <button onclick="saveEditRow(${rowId})" class="btn-save">저장</button>
+        <button onclick="renderTable(studentListData)" class="btn-cancel">취소</button>
+      `;
+    }
+
+    // 5. 수정된 학생 정보 구글 시트에 저장 함수
+    async function saveEditRow(rowId) {
+      const updatedData = {
+        action: "updateStudent",
+        rowId: rowId,
+        schoolName: document.getElementById(`edit-schoolName-${rowId}`).value.trim(),
+        schoolType: document.getElementById(`edit-schoolType-${rowId}`).value,
+        grade: document.getElementById(`edit-grade-${rowId}`).value.trim(),
+        gender: document.getElementById(`edit-gender-${rowId}`).value,
+        name: document.getElementById(`edit-name-${rowId}`).value.trim(),
+        phone: document.getElementById(`edit-phone-${rowId}`).value.trim()
+      };
+
+      if (!updatedData.name) {
+        alert("이름은 필수 항목입니다.");
+        return;
+      }
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(updatedData)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          alert("학생 정보가 수정되었습니다.");
+          
+          // 로컬 데이터 업데이트 후 테이블 다시 그리기
+          const item = studentListData.find(s => s.rowId === rowId);
+          if (item) {
+            item.schoolName = updatedData.schoolName;
+            item.schoolType = updatedData.schoolType;
+            item.grade = updatedData.grade;
+            item.gender = updatedData.gender;
+            item.name = updatedData.name;
+            item.phone = updatedData.phone;
+          }
+          renderTable(studentListData);
+        } else {
+          alert("수정에 실패했습니다.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("저장 처리 중 오류가 발생했습니다.");
+      }
+    }
+
+    // 6. 기존 학생 참가 여부 실시간 변경 함수
     async function updateAttendance(rowId, newStatus) {
       try {
         await fetch(API_URL, {
           method: "POST",
           body: JSON.stringify({ rowId: rowId, attending: newStatus })
         });
+        
+        const item = studentListData.find(s => s.rowId === rowId);
+        if (item) item.attending = newStatus;
+        
         alert(`참가 여부가 '${newStatus}'(으)로 변경되었습니다.`);
       } catch (err) {
         alert("저장에 실패했습니다. 다시 시도해 주세요.");
