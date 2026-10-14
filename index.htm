@@ -213,7 +213,6 @@
     <table>
       <thead>
         <tr>
-          <th>지역</th>
           <th>학교명</th>
           <th>구분</th>
           <th>학년</th>
@@ -233,7 +232,7 @@
 
     let currentChurch = "";
     let currentRegion = "";
-    let studentListData = []; // 학생 데이터를 저장할 배열
+    let studentListData = [];
 
     // 1. 로그인 처리 함수
     async function handleLogin() {
@@ -322,23 +321,22 @@
       }
     }
 
-    // 3. 학생 리스트 테이블 표출 함수
+    // 3. 학생 리스트 테이블 표출 함수 (지역 열 제외)
     function renderTable(list) {
       const tbody = document.getElementById("participant-list");
       tbody.innerHTML = "";
 
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9">등록된 참가자가 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8">등록된 참가자가 없습니다.</td></tr>`;
         return;
       }
 
-      list.forEach((item, index) => {
+      list.forEach((item) => {
         const tr = document.createElement("tr");
         tr.id = `row-${item.rowId}`;
         const currentVal = String(item.attending).trim();
 
         tr.innerHTML = `
-          <td>${item.region || ''}</td>
           <td class="cell-schoolName">${item.schoolName || ''}</td>
           <td class="cell-schoolType">${item.schoolType || ''}</td>
           <td class="cell-grade">${item.grade || ''}</td>
@@ -384,8 +382,7 @@
       tr.querySelector('.cell-name').innerHTML = `<input type="text" id="edit-name-${rowId}" value="${item.name || ''}" class="tbl-input" style="width: 80px;">`;
       tr.querySelector('.cell-phone').innerHTML = `<input type="text" id="edit-phone-${rowId}" value="${item.phone || ''}" class="tbl-input">`;
 
-      // 관리 버튼을 저장/취소로 변경
-      const lastTd = tr.children[8];
+      const lastTd = tr.children[7];
       lastTd.innerHTML = `
         <button onclick="saveEditRow(${rowId})" class="btn-save">저장</button>
         <button onclick="renderTable(studentListData)" class="btn-cancel">취소</button>
@@ -420,7 +417,6 @@
         if (result.success) {
           alert("학생 정보가 수정되었습니다.");
           
-          // 로컬 데이터 업데이트 후 테이블 다시 그리기
           const item = studentListData.find(s => s.rowId === rowId);
           if (item) {
             item.schoolName = updatedData.schoolName;
