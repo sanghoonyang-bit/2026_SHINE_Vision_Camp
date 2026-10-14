@@ -175,6 +175,7 @@
         <div class="form-group">
           <label>학교 구분</label>
           <select id="add-school-type">
+            <option value="예비중">예비중</option>
             <option value="중" selected>중</option>
             <option value="고">고</option>            
           </select>
@@ -228,7 +229,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzQYZk0O-GNcQeGJ9TdLnsEyk29SsBYG43dAczhNqfQGytRShGEOuF8b-GRjLAeFLVc/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzcIXgDYY_LB00YG437xSgJQJGyJPphrk_uI_kJnQfq62h9mVzB4oU3bxHETGr2ATkA/exec";
 
     let currentChurch = "";
     let currentRegion = "";
@@ -357,7 +358,7 @@
       });
     }
 
-    // 4. 행 수정 모드 전환 함수 (구분 옵션을 "중"과 "고"로 단축 및 한정)
+    // 4. 행 수정 모드 전환 함수 (학교 구분 선택지: 예비중 / 중 / 고)
     function enableEditRow(rowId) {
       const tr = document.getElementById(`row-${rowId}`);
       const item = studentListData.find(s => s.rowId === rowId);
@@ -365,12 +366,14 @@
       if (!item) return;
 
       const rawType = String(item.schoolType || '').trim();
+      const isPreMid = rawType.includes('예비');
       const isHigh = rawType.includes('고');
 
       tr.querySelector('.cell-schoolName').innerHTML = `<input type="text" id="edit-schoolName-${rowId}" value="${item.schoolName || ''}" class="tbl-input">`;
       tr.querySelector('.cell-schoolType').innerHTML = `
         <select id="edit-schoolType-${rowId}" class="tbl-input">
-          <option value="중" ${!isHigh ? 'selected' : ''}>중</option>
+          <option value="예비중" ${isPreMid ? 'selected' : ''}>예비중</option>
+          <option value="중" ${!isPreMid && !isHigh ? 'selected' : ''}>중</option>
           <option value="고" ${isHigh ? 'selected' : ''}>고</option>
         </select>
       `;
