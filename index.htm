@@ -209,7 +209,7 @@
       <button onclick="handleAddStudent()" class="btn-add">학생 등록하기</button>
     </div>
 
-    <!-- 학생 명단 테이블 -->
+    <!-- 학생 명단 테이블 (웹 화면에서 지역 열 제외) -->
     <table>
       <thead>
         <tr>
@@ -255,7 +255,7 @@
 
         if (data.success) {
           currentChurch = data.church;
-          currentRegion = data.region;
+          currentRegion = data.region; // 백엔드에서 지역 정보를 받아옴
           studentListData = data.list;
 
           document.getElementById("login-section").classList.add("hidden");
@@ -284,7 +284,7 @@
 
       const newStudentData = {
         action: "addStudent",
-        region: currentRegion,
+        region: currentRegion, // 구글 시트에는 지역이 함께 기록됨
         church: currentChurch,
         schoolName: document.getElementById("add-school-name").value.trim(),
         schoolType: document.getElementById("add-school-type").value,
@@ -321,7 +321,7 @@
       }
     }
 
-    // 3. 학생 리스트 테이블 표출 함수 (지역 열 제외)
+    // 3. 학생 리스트 테이블 표출 함수 (화면 표에서 지역 열 제외)
     function renderTable(list) {
       const tbody = document.getElementById("participant-list");
       tbody.innerHTML = "";
